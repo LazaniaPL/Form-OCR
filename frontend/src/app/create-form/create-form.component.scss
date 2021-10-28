@@ -1,0 +1,40 @@
+h1 {
+  text-align: center;
+  padding: 20px;
+}
+.menu-form-buttons {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+.main-form {
+  height: 100%;
+  display: flex;
+  justify-content: space-around;
+  .form-controls-container{
+    min-width: 60%;
+    .form-controls-buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-array-el {
+      margin: 20px 0;
+      display: flex;
+      justify-content: space-between;
+      .img-pre-view-part{
+        width: 150px;
+
+      }
+    }
+  }
+  .form-img-view{
+    .img-pre-view{
+      height: 80%;
+    }
+    p {
+      text-align: center;
+    }
+  }
+
+}
