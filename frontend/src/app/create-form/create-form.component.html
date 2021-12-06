@@ -10,25 +10,26 @@
 <mat-card class="main-form">
   <div class="form-controls-list">
     <div class="form-controls-buttons">
-      <button mat-raised-button color="primary">Dodaj pole formularza</button>
+      <button mat-raised-button color="primary" (click)="addFormContainer()">Dodaj pole formularza</button>
 
       <button mat-raised-button color="primary">Dodaj własny typ formularza</button>
 
     </div>
-    <div class="form-controls-container">
+    <div class="form-controls-container" *ngFor="let c of ngcontainer">
 
+      
       <mat-card class="form-array-el mat-elevation-z8">
   
         <mat-form-field class="form-field-array">
           <mat-label>Nazwa zmiennej</mat-label>
-          <input type="text" matInput placeholder="Np. Pesel">
+          <input type="text" value="{{c.nameOfVar}}" matInput placeholder="Np. Pesel">
           <mat-hint>Własna nazwa!</mat-hint>
         </mat-form-field>
   
-        <mat-form-field>
-          <mat-select placeholder="Typ zmiennej">
+        <mat-form-field >
+          <mat-select placeholder="Typ zmiennej" (selectionChange)="selectedValue($event,c.id)">
             <ng-container *ngIf="taxonomyVariableType | async as list">
-              <mat-option *ngFor="let item of list" [value]="item.idType">
+              <mat-option  *ngFor="let item of list" [value]="item.idType" >
                 {{ item.valueType }}
               </mat-option>
             </ng-container>
@@ -37,18 +38,23 @@
         </mat-form-field>
         <div>
           <mat-card>
-            {{Wartosc}}
+            {{c.value}}
           </mat-card>
           
-          <button mat-raised-button color="primary" (click)="fileChangeEvent()">Kliknij aby zaznaczyć</button>
+          <button mat-raised-button color="primary"  (click)="fileChangeEvent(c.id)">Kliknij aby zaznaczyć</button>
         </div>
-        <img class="img-pre-view-part" [src]="croppedImage"
+        <!--
+   
+ 
+        <img class="img-pre-view-part"  [src]="croppedImages"
           alt="wycięty podglą">
+          -->
       </mat-card>
     </div>
 
 
   </div>
+ 
   <div class="form-img-view">
     <image-cropper
     [imageChangedEvent]="mainImageEvent"
@@ -57,7 +63,7 @@
     [maintainAspectRatio]="false"
     format="png"
     
-    (imageCropped)="imageCropped($event)"
+    (imageCropped)="imageCropped($event,lastId)"
     (imageLoaded)="imageLoaded()"
     (cropperReady)="cropperReady()"
     (loadImageFailed)="loadImageFailed()"

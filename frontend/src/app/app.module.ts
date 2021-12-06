@@ -14,6 +14,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { ImageCropperModule } from 'ngx-image-cropper';
+import { FormDetailComponent } from './form-detail/form-detail.component';
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import { ImageCropperModule } from 'ngx-image-cropper';
     AppComponent,
     CreateFormComponent,
     StartMenuComponent,
-    ExecFormComponent
+    ExecFormComponent,
+    FormDetailComponent
   ],
   imports: [
     BrowserModule,
