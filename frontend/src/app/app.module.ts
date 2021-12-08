@@ -12,7 +12,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
-import { FormsModule } from '@angular/forms';
+
 import { ImageCropperModule } from 'ngx-image-cropper';
 import { FormDetailComponent } from './form-detail/form-detail.component';
 
@@ -33,7 +33,7 @@ import { FormDetailComponent } from './form-detail/form-detail.component';
     MatButtonModule,
     MatCardModule,
     MatInputModule,
-    MatSelectModule, FormsModule, ImageCropperModule
+    MatSelectModule, ImageCropperModule
   ],
   providers: [],
   bootstrap: [AppComponent]
