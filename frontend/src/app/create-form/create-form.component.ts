@@ -57,22 +57,48 @@ export class CreateFormComponent implements OnInit {
       this.isReady = true;
     })();
   }
+
+  images:any[];
+  currentImage:number = 0;
+  lastImage:number = 0;  
   handleFileInput(event): void {
     //  console.log(event);
 
     if (event.target.files && event.target.files[0]) {
-      let reader = new FileReader();
-      this.imageChangedEvent = event;
 
-      reader.readAsDataURL(event.target.files[0]);
+      
+      this.images=event.target.files;
+      this.currentImage=1;
+      this.lastImage=this.images.length;
+      this.setImages(this.currentImage-1);
+      
+    }
+  }
+
+  onClickChangeImage (amount:number){
+    if(this.currentImage+amount>0 && this.currentImage+amount<=this.lastImage ){
+      this.currentImage=this.currentImage+amount;
+      this.setImages(this.currentImage-1);
+    }
+  }
+
+  setImages(index:number):void{
+    let reader = new FileReader();
+      
+      this.imageChangedEvent = this.images[index];
+
+      reader.readAsDataURL(this.images[index]);
       reader.onload = (event: any) => {
         this.base64Image = event.target.result;
       };
       reader = null;
-    }
   }
 
   loadCustomForm(event): void {
+    if(this.currentImage!=0){
+      this.currentImage=1;
+      this.setImages(this.currentImage);
+    }
     if (event.target.files && event.target.files[0]) {
       const reader = new FileReader();
       reader.onloadend = (e) => {
@@ -175,7 +201,6 @@ get formArr(){
 }
 
   selectedValue(event: MatSelectChange, id: any) {
-
 
     console.log(event.value);
     console.log(id);

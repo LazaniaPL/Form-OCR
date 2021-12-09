@@ -5,7 +5,7 @@
     <button mat-raised-button color="accent" (click)="saveCustomForm()">Zapisz formularz</button>
     <input type="file" (change)="loadCustomForm($event)"/>
   </div>
-  <input type="file" (change)="handleFileInput($event)" />
+  <input type="file" (change)="handleFileInput($event)" multiple accept="image/png, image/gif, image/jpeg"/>
   <button mat-raised-button color="accent">Start</button>
 </div>
 
@@ -67,10 +67,20 @@
   </form>
 
   <div class="form-img-view">
-    <image-cropper [imageChangedEvent]="imageChangedEvent" [maintainAspectRatio]="false" [aspectRatio]="4 / 4"
+    <image-cropper [imageFile]="imageChangedEvent" [maintainAspectRatio]="false" [aspectRatio]="4 / 4"
       [resizeToWidth]="256" format="png" (imageCropped)="imageCropped($event)">
     </image-cropper>
-    <p>Obraz 1 z Dużo</p>
+    <p>
+      <button mat-icon-button color="accent" (click)="onClickChangeImage(-1)" >
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </button>
+      Obraz {{currentImage}} z {{lastImage}}
+      <button mat-icon-button color="accent" (click)="onClickChangeImage(1)">
+        <mat-icon>keyboard_arrow_right</mat-icon>
+      </button>
+
+    </p>
+    
   </div>
 
 </mat-card>
