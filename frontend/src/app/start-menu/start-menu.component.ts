@@ -16,6 +16,6 @@ export class StartMenuComponent implements OnInit {
     this.router.navigateByUrl('formularz');
   }
   routeToFormWithFile(){
-   // this.router.navigateByUrl('formularz',{state:{data:file}});
+    //this.router.navigateByUrl('formularz',{load:true});
   }
 }

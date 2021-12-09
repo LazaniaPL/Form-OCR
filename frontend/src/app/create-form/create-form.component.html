@@ -11,27 +11,31 @@
 
 
 <mat-card class="main-form">
-  <div class="form-controls-list">
+
+
+  <form [formGroup]="form" formArrayName="formArr">
     <div class="form-controls-buttons">
       <button mat-raised-button color="primary" (click)="addFormContainer()">Dodaj pole formularza</button>
 
       <button mat-raised-button color="primary">Dodaj własny typ formularza</button>
 
     </div>
-    <div class="form-controls-container" *ngFor="let c of ngcontainer">
+    <div class="form-controls-container" *ngFor="let el of ngcontainer">
+      <!--><div class="form-controls-container" *ngFor="let el of formArr.controls;index as idx"></div>-->
 
 
       <mat-card class="form-array-el mat-elevation-z8">
 
         <mat-form-field class="form-field-array">
           <mat-label>Nazwa zmiennej</mat-label>
-          <input type="text" value="{{c.nameOfVar}}" matInput placeholder="Np. Pesel">
+          <!--input formControlName="nameOfVar" type="text"  matInput placeholder="Np. Pesel"-->
+          <input formControlName="nameOfVar" type="text" value="{{el.nameOfVar}}" matInput placeholder="Np. Pesel">
           <mat-hint>Własna nazwa!</mat-hint>
         </mat-form-field>
 
         <mat-form-field>
-          <mat-select placeholder="Typ zmiennej" (selectionChange)="selectedValue($event,c.id)">
-            <ng-container *ngIf="taxonomyVariableType | async as list">
+          <mat-select placeholder="Typ zmiennej" (selectionChange)="selectedValue($event,el.id)">
+            <ng-container  *ngIf="taxonomyVariableType | async as list">
               <mat-option *ngFor="let item of list" [value]="item.idType">
                 {{ item.valueType }}
               </mat-option>
@@ -41,10 +45,11 @@
         </mat-form-field>
         <div>
           <mat-card>
-            {{c.value}}
+            <!--input formControlName="value" /-->
+            {{el.value}}
           </mat-card>
 
-          <button mat-raised-button color="primary" (click)="scanOCR(c.id)">Kliknij aby zeskanować</button>
+          <button mat-raised-button color="primary" (click)="scanOCR(el.id)">Kliknij aby zeskanować</button>
         </div>
         <!--
    
@@ -59,7 +64,7 @@
     </div>
 
 
-  </div>
+  </form>
 
   <div class="form-img-view">
     <image-cropper [imageChangedEvent]="imageChangedEvent" [maintainAspectRatio]="false" [aspectRatio]="4 / 4"

@@ -6,17 +6,13 @@ import { createWorker } from 'tesseract.js';
 import { saveAs } from 'file-saver';
 import { ngcontainer } from '../interfaces/ngcontainer.interface';
 import { cooridinates } from '../interfaces/coorifinates.interface';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-create-form',
   templateUrl: './create-form.component.html',
   styleUrls: ['./create-form.component.scss']
 })
-
-
-
-
 
 
 
@@ -46,6 +42,7 @@ export class CreateFormComponent implements OnInit {
   cooridinates: cooridinates;
 
   constructor(
+    
     private fb: FormBuilder
   ) {
     
@@ -87,6 +84,10 @@ export class CreateFormComponent implements OnInit {
       reader.readAsText(event.target.files[0]);
     }
   }
+
+
+
+
   scanOCR(id) {
     this.isScanning = true;
     this.imageCropper.imageFile = this.croppedImage;
@@ -154,7 +155,9 @@ export class CreateFormComponent implements OnInit {
   ngOnInit(): void {
 
 
-    this.form = this.fb.group({})
+    this.form = this.fb.group({
+      formArrContainer: this.fb.array([])
+    })
 
     this.taxonomyVariableType = of(
       [
@@ -165,7 +168,12 @@ export class CreateFormComponent implements OnInit {
       ]
     )
     //this.addFormContainer();
+    this.addFormArrayElement();
   }
+get formArr(){
+  return this.form.get('formArrContainer') as FormArray;
+}
+
   selectedValue(event: MatSelectChange, id: any) {
 
 
@@ -224,6 +232,18 @@ export class CreateFormComponent implements OnInit {
       "value": "",
       "cooridinates": null
     });
+    this.addFormArrayElement();
+  }
+  addFormArrayElement(){
+    
+    this.formArr.push(
+     this.fb.group({
+      id:this.fb.control(this.ngcontainer.length), 
+      nameOfVar: this.fb.control(""),
+      taxonomyVariableTypeID:this.fb.control(""),
+      value:this.fb.control("")
+     })
+   )
   }
 
   debugModeType = false;

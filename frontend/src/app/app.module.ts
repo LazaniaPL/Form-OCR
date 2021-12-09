@@ -15,6 +15,7 @@ import {MatSelectModule} from '@angular/material/select';
 
 import { ImageCropperModule } from 'ngx-image-cropper';
 import { FormDetailComponent } from './form-detail/form-detail.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -33,7 +34,11 @@ import { FormDetailComponent } from './form-detail/form-detail.component';
     MatButtonModule,
     MatCardModule,
     MatInputModule,
-    MatSelectModule, ImageCropperModule
+    MatSelectModule, 
+    ImageCropperModule,
+    FormsModule,    //import here
+    ReactiveFormsModule //import here
+    
   ],
   providers: [],
   bootstrap: [AppComponent]
