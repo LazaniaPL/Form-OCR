@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
+import { CropperPosition, ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
 import { MatSelectChange } from "@angular/material/select";
 import { createWorker } from 'tesseract.js';
 import { saveAs } from 'file-saver';
-import { ngcontainer } from '../interfaces/ngcontainer.interface';
+//import { ngcontainer } from '../interfaces/ngcontainer.interface';
 import { cooridinates } from '../interfaces/coorifinates.interface';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 
@@ -17,17 +17,17 @@ import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 
 
 export class CreateFormComponent implements OnInit {
-  form:FormGroup
+  form: FormGroup
 
-  ngcontainer :ngcontainer[] = [
-    {
-      "id": 1,
-      "nameOfVar": "",
-      "taxonomyVariableTypeID": '1',
-      "value": "",
-      "cooridinates": null
-    }
-  ]
+  // ngcontainer: ngcontainer[] = [
+  //   {
+  //     "id": 1,
+  //     "nameOfVar": "",
+  //     "taxonomyVariableTypeID": '1',
+  //     "value": "",
+  //     "cooridinates": null
+  //   }
+  // ]
 
 
   @ViewChild(ImageCropperComponent) imageCropper: ImageCropperComponent;
@@ -42,10 +42,10 @@ export class CreateFormComponent implements OnInit {
   cooridinates: cooridinates;
 
   constructor(
-    
+
     private fb: FormBuilder
   ) {
-    
+
     this.initialize();
   }
   initialize(): void {
@@ -58,75 +58,156 @@ export class CreateFormComponent implements OnInit {
     })();
   }
 
-  images:any[];
-  currentImage:number = 0;
-  lastImage:number = 0;  
+
+  ngOnInit(): void {
+
+
+    this.form = this.fb.group({
+
+      //formArrContainer: this.fb.array([]),
+      formArrPage: this.fb.array([])
+    })
+
+    this.taxonomyVariableType = of(
+      [
+        { idType: '1', valueType: 'String' },
+        { idType: '2', valueType: 'Liczba' },
+        { idType: '3', valueType: 'Data' },
+        { idType: '4', valueType: 'PESEL' },
+      ]
+    )
+    //this.addFormContainer();
+    this.formPage.push(
+      this.fb.group({
+        formArrContainer: this.fb.array([])
+      })
+    )
+    this.addFormArrayElement();
+
+  }
+
+  images: any[];
+  currentImage: number = 0;
+  lastImage: number = 0;
+
+  createArrayFormPage(numberOfImages: number): void {
+
+    for (let index = 0; index < numberOfImages; index++) {
+      const element = numberOfImages;
+
+
+      (this.form.get("formArrPage") as FormArray).push(
+        this.fb.group({
+          formArrContainer: this.fb.array([])
+        })
+      )
+
+      this.formArr2(element).push(
+        this.fb.group({
+          id: this.fb.control(this.formArr2(element).length),
+          nameOfVar: this.fb.control(""),
+          taxonomyVariableTypeID: this.fb.control(""),
+          value: this.fb.control(""),
+          cooridinates: this.fb.control(null)
+        })
+      )
+
+    }
+
+  }
+
   handleFileInput(event): void {
     //  console.log(event);
 
     if (event.target.files && event.target.files[0]) {
 
-      
-      this.images=event.target.files;
-      this.currentImage=1;
-      this.lastImage=this.images.length;
-      this.setImages(this.currentImage-1);
-      
+
+      this.images = event.target.files;
+      this.currentImage = 1;
+      this.lastImage = this.images.length;
+      this.setImages(this.currentImage - 1);
+
     }
   }
 
-  onClickChangeImage (amount:number){
-    if(this.currentImage+amount>0 && this.currentImage+amount<=this.lastImage ){
-      this.currentImage=this.currentImage+amount;
-      this.setImages(this.currentImage-1);
+  onClickChangeImage(amount: number) {
+
+
+    if (this.currentImage + amount > 0 && this.currentImage + amount <= this.lastImage) {
+      this.currentImage = this.currentImage + amount;
+      this.setImages(this.currentImage - 1);
     }
   }
 
-  setImages(index:number):void{
+  setImages(index: number): void {
     let reader = new FileReader();
-      
-      this.imageChangedEvent = this.images[index];
 
-      reader.readAsDataURL(this.images[index]);
-      reader.onload = (event: any) => {
-        this.base64Image = event.target.result;
-      };
-      reader = null;
+    this.imageChangedEvent = this.images[index];
+
+    reader.readAsDataURL(this.images[index]);
+    reader.onload = (event: any) => {
+      this.base64Image = event.target.result;
+    };
+    reader = null;
   }
 
   loadCustomForm(event): void {
-    if(this.currentImage!=0){
-      this.currentImage=1;
+    if (this.currentImage != 0) {
+      this.currentImage = 1;
       this.setImages(this.currentImage);
     }
     if (event.target.files && event.target.files[0]) {
       const reader = new FileReader();
       reader.onloadend = (e) => {
         //this.ngcontainer=reader.result;
-        this.ngcontainer=JSON.parse(reader.result.toString());
+        //this.ngcontainer = JSON.parse(reader.result.toString());
+        this.formPage.controls
+        
+        this.formPage.controls.forEach(e=>{
+          (e.get('formArrContainer')as FormArray).patchValue(JSON.parse(reader.result.toString()))
+        })
+        
         console.log(reader.result.toString());
         // handle data processing
       };
       reader.readAsText(event.target.files[0]);
+
+
+      this.formPage.controls.forEach(e=>{
+        
+
+        (e.get('formArrContainer')as FormArray).controls.forEach(event=>{
+          this.addFormArrayElement()
+        })
+      })
+
+      // this.ngcontainer.forEach(e => {
+      //   this.addFormContainer()
+      // })
+     
     }
   }
 
 
+  scanOcrParams() {
+
+  }
 
 
-  scanOCR(id) {
+
+  scanOCR(id,pageID) {
     this.isScanning = true;
     this.imageCropper.imageFile = this.croppedImage;
     this.imageCropper.crop();
     //this.imageChangedEvent = null;
-    this.doOCR(this.croppedImage, id);
+    this.doOCR(this.croppedImage, id,pageID);
   }
   fileChangeEvent(event: any): void {
     this.imageChangedEvent = event;
   }
   imageCropped(event: ImageCroppedEvent): void {
-    console.log(event);
-
+//console.log(event);
+   // console.log(event.base64);
 
     this.cooridinates = {
       "width": event.width,
@@ -137,27 +218,30 @@ export class CreateFormComponent implements OnInit {
     };
 
     this.croppedImage = event.base64;
-    console.log(this.imageCropper);
+    //console.log(this.imageCropper);
 
   }
 
-  doOCR(base64Image: string, id): void {
+
+  doOcrParams(id): void {
+    //(this.formArr.controls[id] as FormGroup).get('cooridinates');
+
+
+    // this.doOCR(,id)
+  }
+
+
+  doOCR(base64Image: string, id,pageID): void {
     //this.ocrResult = 'Scanning';
     console.log(`Started: ${new Date()}`);
     (async image => {
       if (this.isReady) {
         const data = await this.worker.recognize(image);
-        console.log(data);
-        this.ngcontainer = this.ngcontainer.map(item => {
-          if (item.id == id) {
-            item.value = data.data.text;
-            item.cooridinates = this.cooridinates;
-            console.log('Koordynaty' + item.cooridinates);
+       // console.log(data);
+   
+        (this.formArr2(pageID).controls[id] as FormGroup).get('value').patchValue(data.data.text);
+        (this.formArr2(pageID).controls[id] as FormGroup).get('cooridinates').patchValue(this.cooridinates);
 
-          }
-
-          return item;
-        });
 
         //this.ocrResult = data.data.text;
       }
@@ -178,27 +262,18 @@ export class CreateFormComponent implements OnInit {
 
   editMode = true;
   //dataPanelType:Observable<{id:string;editMode:Boolean;value:String}[]> |undefined;
-  ngOnInit(): void {
 
+  // get formArr() {
+  //   return this.form.get('formArrContainer') as FormArray;
+  // }
 
-    this.form = this.fb.group({
-      formArrContainer: this.fb.array([])
-    })
-
-    this.taxonomyVariableType = of(
-      [
-        { idType: '1', valueType: 'String' },
-        { idType: '2', valueType: 'Liczba' },
-        { idType: '3', valueType: 'Data' },
-        { idType: '4', valueType: 'PESEL' },
-      ]
-    )
-    //this.addFormContainer();
-    this.addFormArrayElement();
+  get formPage() {
+    return this.form.get('formArrPage') as FormArray;
   }
-get formArr(){
-  return this.form.get('formArrContainer') as FormArray;
-}
+
+  formArr2(id) {
+    return (this.form.get('formArrPage') as FormArray).controls[id].get('formArrContainer') as FormArray;
+  }
 
   selectedValue(event: MatSelectChange, id: any) {
 
@@ -246,46 +321,55 @@ get formArr(){
     }
   
    */
-  addFormContainer() {
+  
+  addFormArrayElement() {
 
+    this.formPage.controls.forEach(element => {
+      (element.get("formArrContainer")  as FormArray).push(
+        this.fb.group({
 
+          id: this.fb.control((element.get("formArrContainer")  as FormArray).length),
+          nameOfVar: this.fb.control(""),
+          taxonomyVariableTypeID: this.fb.control(""),
+          value: this.fb.control(""),
+          cooridinates: this.fb.control(null)
+        })
+      )
 
-    this.ngcontainer.push({
-      "id": (this.ngcontainer.length + 1),
-      "nameOfVar": "",
-      "taxonomyVariableTypeID": '1',
-      "value": "",
-      "cooridinates": null
     });
-    this.addFormArrayElement();
-  }
-  addFormArrayElement(){
-    
-    this.formArr.push(
-     this.fb.group({
-      id:this.fb.control(this.ngcontainer.length), 
-      nameOfVar: this.fb.control(""),
-      taxonomyVariableTypeID:this.fb.control(""),
-      value:this.fb.control("")
-     })
-   )
+
+
+
+
+    // this.formArr.push(
+    //   this.fb.group({
+    //     id: this.fb.control(this.ngcontainer.length),
+    //     nameOfVar: this.fb.control(""),
+    //     taxonomyVariableTypeID: this.fb.control(""),
+    //     value: this.fb.control(""),
+    //     cooridinates: this.fb.control(null)
+    //   })
+    // )
   }
 
   debugModeType = false;
 
   activateDebug(): void {
-    this.debugModeType = !this.debugModeType
+    this.debugModeType = !this.debugModeType;
+
+    // (this.formArr.controls[1] as FormGroup).get('cooridinates').get('cropperPosition').setValue(this.imageCropper.cropper)
+
   }
 
   saveCustomForm(): void {
 
-    const ngNoValue = this.ngcontainer.map(item => {
-      item.value = "";
+    // const ngNoValue = this.ngcontainer.map(item => {
+    //   item.value = "";
 
-      return item;
-    });
+    //   return item;
+    // });
 
-    const blob = new Blob([JSON.stringify(ngNoValue)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(this.formArr2(0).getRawValue())], { type: 'application/json' });
     const current = new Date();
 
 
@@ -294,7 +378,4 @@ get formArr(){
     saveAs(blob, `plik ${timestamp}.json`);
   }
 
-
-
 }
-
