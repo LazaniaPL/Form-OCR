@@ -7,6 +7,8 @@
   </div>
   <input type="file" (change)="handleFileInput($event)" multiple accept="image/png, image/gif, image/jpeg" />
   <button mat-raised-button color="accent">Start</button>
+  <button (click)="doTest()">I Myk Crop</button>
+  <button (click)="doTestOCR()">I Myk OCR</button>
 </div>
 
 
@@ -15,17 +17,17 @@
 
   <form [formGroup]="form">
     <div class="form-controls-buttons">
-      <button mat-raised-button color="primary" (click)="addFormArrayElement()">Dodaj pole formularza</button>
+      <button mat-raised-button color="primary" (click)="pushNewFormArrayElement()">Dodaj pole formularza</button>
       <button mat-raised-button color="primary">Dodaj własny typ formularza</button>
     </div>
 
     <div formArrayName="formArrPage">
-      <div *ngFor="let pageControls of formPage.controls; let pageID=index">
-        <div [formGroupName]="pageID">
+      <ng-container *ngFor="let pageControls of formPage.controls; let pageID=index">
+        <div [formGroupName]="pageID" *ngIf="pageID == currentImage - 1">
 
           <div formArrayName="formArrContainer">
             <div *ngFor="let control of formArr2(pageID).controls; let i=index">
-      
+
               <mat-card class="form-array-el mat-elevation-z8">
                 <div [formGroupName]="i">
                   <mat-form-field class="form-field-array">
@@ -49,11 +51,11 @@
                       <mat-label>Odczytana wartość</mat-label>
                       <input formControlName="value" type="text" matInput placeholder="Rezultat">
                     </mat-card>
-      
+
                     <button mat-raised-button color="primary" (click)="scanOCR(i,pageID)">Kliknij aby zeskanować</button>
                   </div>
-      
-                  
+
+
                 </div>
               </mat-card>
             </div>
@@ -61,12 +63,11 @@
 
 
         </div>
+      </ng-container>
 
-
-      </div>
     </div>
 
-   
+
     <!-- <div class="form-controls-container" *ngFor="let el of ngcontainer">
      <div class="form-controls-container" *ngFor="let el of formArr.controls;index as idx"></div>
 

@@ -1,6 +1,6 @@
 import { cooridinates } from "./coorifinates.interface";
 
-export interface ngcontainer {
+export interface DataContainer {
     id: number;
     nameOfVar: string;
     taxonomyVariableTypeID: string;
