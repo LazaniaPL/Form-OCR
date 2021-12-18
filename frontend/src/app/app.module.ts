@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CreateFormComponent } from './create-form/create-form.component';
 import { StartMenuComponent } from './start-menu/start-menu.component';
-import { ExecFormComponent } from './exec-form/exec-form.component';
+
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSliderModule } from '@angular/material/slider';
 import {MatButtonModule} from '@angular/material/button';
@@ -15,7 +15,7 @@ import {MatSelectModule} from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 
 import { ImageCropperModule } from 'ngx-image-cropper';
-import { FormDetailComponent } from './form-detail/form-detail.component';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
@@ -24,8 +24,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     AppComponent,
     CreateFormComponent,
     StartMenuComponent,
-    ExecFormComponent,
-    FormDetailComponent
+
+
   ],
   imports: [
     BrowserModule,
@@ -35,12 +35,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     MatButtonModule,
     MatCardModule,
     MatInputModule,
-    MatSelectModule, 
+    MatSelectModule,
     ImageCropperModule,
     FormsModule,    //import here
     ReactiveFormsModule ,//import here
-    MatIconModule 
-    
+    MatIconModule
+
   ],
   providers: [],
   bootstrap: [AppComponent]

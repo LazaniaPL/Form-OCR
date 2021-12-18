@@ -12,6 +12,7 @@ import { saveAs } from 'file-saver';
 import { cooridinates } from '../interfaces/coorifinates.interface';
 import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { DataContainer } from '../interfaces/dataContainer.interface';
+import { waitForAsync } from '@angular/core/testing';
 
 @Component({
   selector: 'app-create-form',
@@ -40,6 +41,7 @@ export class CreateFormComponent implements OnInit {
   croppedImage: any = '';
   isScanning: boolean;
   actualCooridinates: cooridinates;
+  OcrWorking:boolean;
 
   images: any[];
   currentImage: number = 0;
@@ -123,7 +125,6 @@ export class CreateFormComponent implements OnInit {
           taxonomyVariableTypeID: this.fb.control(''),
           value: this.fb.control(''),
           cooridinates: this.fb.control(null),
-          base64: this.fb.control(''),
         });
         groupToPush.patchValue(templateEl);
         (element.get('formArrContainer') as FormArray).push(groupToPush);
@@ -142,7 +143,6 @@ export class CreateFormComponent implements OnInit {
           taxonomyVariableTypeID: this.fb.control(''),
           value: this.fb.control(''),
           cooridinates: this.fb.control(null),
-          base64: this.fb.control(''),
         })
       );
     });
@@ -166,6 +166,7 @@ export class CreateFormComponent implements OnInit {
     ) {
       this.currentImage = this.currentImage + amount;
       this.setImages(this.currentImage - 1);
+      this.doOCRMultiple();
     }
   }
 
@@ -198,92 +199,53 @@ export class CreateFormComponent implements OnInit {
           reader.result.toString(),
           this.form.getRawValue()
         );
+        this.doOCRMultiple();
         // handle data processing
       };
       reader.readAsText(event.target.files[0]);
 
-      // this.formPage.controls.forEach((e) => {
-      //   (e.get('formArrContainer') as FormArray).controls.forEach((event) => {
-      //     this.pushNewFormArrayElement();
-      //   });
-      // });
 
-      // this.ngcontainer.forEach(e => {
-      //   this.addFormContainer()
-      // })
     }
   }
 
-  scanOcrParams() {}
-
-
-  doTest() {
-    this.formArr2(this.currentImage - 1).controls.forEach((arrEl) => {
-      this.imageCropper.cropper = (
-        arrEl.get('cooridinates').value as cooridinates
-      ).cropperPosition;
-      this.imageCropper.crop();
-    });
-  }
-
-  doTestOCR() {
+  doOCRMultiple() {
     const rectanglesForOCR = [];
+    let checkAllReadyDone = false;
+    this.OcrWorking=true;
+
     this.formArr2(this.currentImage - 1).controls.forEach((arrEl) => {
       console.log('doTestOCR');
-      const elRectangle = (arrEl.get('cooridinates').value as cooridinates);
-      rectanglesForOCR.push(
-          {
-            left: elRectangle.cropperPosition.x1,
-            top: elRectangle.cropperPosition.y2,
-            width: elRectangle.cropperPosition.x2 - elRectangle.cropperPosition.x1,
-            height: elRectangle.cropperPosition.y2 -elRectangle.cropperPosition.y1,
-          }
-      );
-    });
-    (async () => {
-      for (let i = 0; i < rectanglesForOCR.length; i++) {
-        const {
-          data: { text },
-        } = await this.worker.recognize(this.imageChangedEvent, {
-          rectangle: rectanglesForOCR[i],
-        });
-        this.formArr2(this.currentImage - 1).controls[i].get('value').setValue(text);
+      const elRectangle = arrEl.get('cooridinates').value as cooridinates;
+      const valueTemp = arrEl.get('value').value as String;
+      if (valueTemp != '') {
+        checkAllReadyDone = true;
+        //break;
       }
-      await this.worker.terminate();
-    })();
+      rectanglesForOCR.push({
+        left: elRectangle.imagePosition.x1,
+        top: elRectangle.imagePosition.y1,
+        width: elRectangle.width,
+        height: elRectangle.height,
+      });
+    });
+    if (!checkAllReadyDone) {
+      (async () => {
+        for (let i = 0; i < rectanglesForOCR.length; i++) {
+          const {
+            data: { text },
+          } = await this.worker.recognize(this.imageChangedEvent, {
+            rectangle: rectanglesForOCR[i],
+          });
+          this.formArr2(this.currentImage - 1)
+            .controls[i].get('value')
+            .setValue(text);
+        }
+
+        // await this.worker.terminate();
+      })();
+    }
+    this.OcrWorking=false;
   }
-
-  // doOcrMultiTest() {
-  //   const rectangles = [
-  //     {
-  //       left: 49,
-  //       top: 114,
-  //       width: 346 - 49,
-  //       height: 139 - 114,
-  //     },
-  //     {
-  //       left: 188,
-  //       top: 470,
-  //       width: 318 - 188,
-  //       height: 508 - 470,
-  //     },
-  //   ];
-
-  //   (async () => {
-  //     const values = [];
-  //     for (let i = 0; i < rectangles.length; i++) {
-  //       const {
-  //         data: { text },
-  //       } = await this.worker.recognize(this.imageChangedEvent, {
-  //         rectangle: rectangles[i],
-  //       });
-  //       values.push(text);
-  //     }
-  //     console.log(values);
-  //     await this.worker.terminate();
-  //   })();
-  // }
-
 
 
   scanOCR(idContainer: number, pageID: number) {
@@ -307,30 +269,7 @@ export class CreateFormComponent implements OnInit {
       imagePosition: event.imagePosition,
       offsetImagePosition: event.offsetImagePosition,
     };
-    // this.formArr2(this.currentImage - 1).controls.forEach((arrEl) => {
-    //   console.log(
-    //     'imageCropped petla ',
-    //     arrEl,
-    //     (arrEl.get('cooridinates').value as cooridinates).cropperPosition,
-    //     this.actualCooridinates.cropperPosition,
-    //     (arrEl.get('cooridinates').value as cooridinates).cropperPosition ===
-    //       this.actualCooridinates.cropperPosition
-    //   );
-    //   if (
-    //     (arrEl.get('cooridinates').value as cooridinates).cropperPosition.x1 ===
-    //       this.actualCooridinates.cropperPosition.x1 &&
-    //     (arrEl.get('cooridinates').value as cooridinates).cropperPosition.x2 ===
-    //       this.actualCooridinates.cropperPosition.x2 &&
-    //     (arrEl.get('cooridinates').value as cooridinates).cropperPosition.y1 ===
-    //       this.actualCooridinates.cropperPosition.y1 &&
-    //     (arrEl.get('cooridinates').value as cooridinates).cropperPosition.y2 ===
-    //       this.actualCooridinates.cropperPosition.y2
-    //   ) {
-    //     console.log('imageCropped spelniony warunek');
-    //     arrEl.get('base64').setValue(event.base64);
-    //   }
-    //   // this.imageCropper.crop();
-    // });
+
 
     this.croppedImage = event.base64;
     console.log(
@@ -341,13 +280,6 @@ export class CreateFormComponent implements OnInit {
     //console.log(this.imageCropper);
 
     console.log('AfterScan', this.form.getRawValue());
-  }
-
-  checkCord(firstCord: cooridinates, secondCord: cooridinates) {}
-
-  doOcrParams(id): void {
-    //(this.formArr.controls[id] as FormGroup).get('cooridinates');
-    // this.doOCR(,id)
   }
 
   doOCR(base64Image: string, id, pageID): void {
@@ -386,51 +318,44 @@ export class CreateFormComponent implements OnInit {
     console.log(event.value);
     console.log(id);
   }
-  /**
-    mainImageEvent: any = "";
 
-
-
-    fileImportEvent(event: any): void {
-      this.mainImageEvent = event;
-    }
-
-    lastId: any = "";
-
-
-    fileChangeEvent(id: any) {
-      if (id != this.lastId) {
-        this.editMode = true;
-      } else {
-        this.editMode = !this.editMode;
-      }
-      console.log(this.editMode);
-
-      this.lastId = id;
-    }
-
-    imageCropped(event: ImageCroppedEvent,id:any) {
-
-      if (!this.croppedImages[id]){
-
-      this.croppedImages.push({
-        "id": id,
-        "croppedImage":event.base64
-      });
-    }
-      this.croppedImages[id]={
-        "id":id,
-        "croppedImage":event.base64
-      };
-      //this.croppedImage = event.base64;
-    }
-
-   */
 
   activateDebug(): void {
     this.debugModeType = !this.debugModeType;
 
     // (this.formArr.controls[1] as FormGroup).get('cooridinates').get('cropperPosition').setValue(this.imageCropper.cropper)
+  }
+  saveFile() {
+    const formPage: any[] = this.formPage.getRawValue();
+    const amount = 1;
+
+
+
+
+
+    this.onClickChangeImage(1);
+    while (this.currentImage + amount <= this.lastImage) {
+
+        if (this.OcrWorking) {
+          //wait
+        } else {
+          this.onClickChangeImage(1);
+        };
+
+
+    }
+
+
+
+    const blob = new Blob([JSON.stringify(formPage)], {
+      type: 'application/json',
+    });
+
+    const current = new Date();
+
+    const timestamp = current.getTime();
+
+    saveAs(blob, `plik z wynikami ${timestamp}.json`);
   }
 
   saveCustomForm(): void {
@@ -438,7 +363,7 @@ export class CreateFormComponent implements OnInit {
 
     formValues.map((item) => {
       item.value = '';
-      item.base64 = '';
+
       return item;
     });
 
