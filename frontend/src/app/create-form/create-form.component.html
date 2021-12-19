@@ -1,45 +1,83 @@
 <h1>Fomularz tworzenia</h1>
+
 <div class="menu-form-buttons">
-  <button mat-raised-button color="primary" (click)="activateDebug()">Debug mode {{debugModeType}}</button>
+  <button mat-raised-button color="primary" (click)="activateDebug()">
+    Debug mode {{ debugModeType }}
+  </button>
   <div>
-    <button mat-raised-button color="accent" (click)="saveCustomForm()">Zapisz formularz</button>
-    <input type="file" (change)="loadCustomForm($event)" />
+    <button mat-raised-button color="basic" (click)="saveCustomForm()">
+      Zapisz formularz
+    </button>
+
+    <mat-label id="importSchematowLabel" aria-label="Wgranie schematów do systemu" for="inputSchematowLabel">
+      <input id="inputSchematowLabel" aria-labelledby="importSchematowLabel" type="file" (change)="loadCustomForm($event)" />
+    </mat-label>
   </div>
-  <input type="file" (change)="handleFileInput($event)" multiple accept="image/png, image/gif, image/jpeg" />
-  <button mat-raised-button color="accent" (click)="saveFile()">Zapisz wyniki</button>
+  <mat-label id="importZdjecLabel" aria-label="Wgranie zdjęć do systemu" for="inputZdjecLabel">
+    <input id="inputZdjecLabel" aria-labelledby="importZdjecLabel"
+      type="file"
+      (change)="handleFileInput($event)"
+      multiple
+      accept="image/png, image/gif, image/jpeg,image/pdf"
+    />
+  </mat-label>
+  <button mat-raised-button color="basic" (click)="saveFile()">
+    Zapisz wyniki
+  </button>
+
   <!-- <button (click)="doTest()">I Myk Crop</button> -->
   <!-- <button (click)="doTestOCR()">I Myk OCR</button> -->
 </div>
 
-
 <mat-card class="main-form">
-
-
   <form [formGroup]="form">
     <div class="form-controls-buttons">
-      <button mat-raised-button color="primary" (click)="pushNewFormArrayElement()">Dodaj pole formularza</button>
-      <button mat-raised-button color="primary">Dodaj własny typ formularza</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="pushNewFormArrayElement()"
+      >
+        Dodaj pole formularza
+      </button>
+      <button mat-raised-button color="primary">
+        Dodaj własny typ formularza
+      </button>
     </div>
 
     <div formArrayName="formArrPage">
-      <ng-container *ngFor="let pageControls of formPage.controls; let pageID=index">
+      <ng-container
+        *ngFor="let pageControls of formPage.controls; let pageID = index"
+      >
         <div [formGroupName]="pageID" *ngIf="pageID == currentImage - 1">
-
           <div formArrayName="formArrContainer">
-            <div *ngFor="let control of formArr2(pageID).controls; let i=index">
-
+            <div
+              *ngFor="let control of formArr2(pageID).controls; let i = index"
+            >
               <mat-card class="form-array-el mat-elevation-z8">
                 <div [formGroupName]="i">
                   <mat-form-field class="form-field-array">
                     <mat-label>Nazwa zmiennej</mat-label>
-                    <input formControlName="nameOfVar" type="text" matInput placeholder="Np. Pesel">
+                    <input
+                      formControlName="nameOfVar"
+                      type="text"
+                      matInput
+                      placeholder="Np. Pesel"
+                    />
                     <mat-hint>Własna nazwa!</mat-hint>
                   </mat-form-field>
                   <mat-form-field>
-                    <mat-select formControlName="taxonomyVariableTypeID" placeholder="Typ zmiennej"
-                      (selectionChange)="selectedValue($event,i)">
-                      <ng-container *ngIf="taxonomyVariableType | async as list">
-                        <mat-option *ngFor="let item of list" [value]="item.idType">
+                    <mat-select
+                      formControlName="taxonomyVariableTypeID"
+                      placeholder="Typ zmiennej"
+                      (selectionChange)="selectedValue($event, i)"
+                    >
+                      <ng-container
+                        *ngIf="taxonomyVariableType | async as list"
+                      >
+                        <mat-option
+                          *ngFor="let item of list"
+                          [value]="item.idType"
+                        >
                           {{ item.valueType }}
                         </mat-option>
                       </ng-container>
@@ -49,44 +87,58 @@
                   <div>
                     <mat-card>
                       <mat-label>Odczytana wartość</mat-label>
-                      <input formControlName="value" type="text" matInput placeholder="Rezultat">
+                      <mat-label id="wyniki i"  aria-label="Otrzymane dane z OCR">
+                      <input
+                      id="wyniki do edycji i" aria-labelledby="importSchematowLabel"
+                        formControlName="value"
+                        type="text"
+                        matInput
+                        placeholder="Rezultat"
+                      />
+                    </mat-label>
                     </mat-card>
 
-                    <button mat-raised-button color="primary" (click)="scanOCR(i,pageID)">Kliknij aby zeskanować</button>
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      (click)="scanOCR(i, pageID)"
+                    >
+                      Kliknij aby zeskanować
+                    </button>
                   </div>
-
-
                 </div>
               </mat-card>
             </div>
           </div>
-
-
         </div>
       </ng-container>
-
     </div>
-
-
-
-
   </form>
 
-  <div class="form-img-view">
-    <image-cropper [imageFile]="imageChangedEvent" [maintainAspectRatio]="false" [aspectRatio]="4 / 4"
-      [resizeToWidth]="256" format="png" [imageQuality]=100 (imageCropped)="imageCropped($event)">
+  <div
+    style="width: 500px"
+    alt="zdjecie jakie jest skanowane obecnie"
+    class="form-img-view"
+  >
+    <image-cropper
+      style="height: 100%; max-width: 100%"
+      [imageFile]="imageChangedEvent"
+      [maintainAspectRatio]="false"
+      [aspectRatio]="4 / 4"
+      [resizeToWidth]="256"
+      format="png"
+      [imageQuality]="100"
+      (imageCropped)="imageCropped($event)"
+    >
     </image-cropper>
     <p>
       <button mat-icon-button color="accent" (click)="onClickChangeImage(-1)">
         <mat-icon>keyboard_arrow_left</mat-icon>
       </button>
-      Obraz {{currentImage}} z {{lastImage}}
+      Obraz {{ currentImage }} z {{ lastImage }}
       <button mat-icon-button color="accent" (click)="onClickChangeImage(1)">
         <mat-icon>keyboard_arrow_right</mat-icon>
       </button>
-
     </p>
-
   </div>
-
 </mat-card>
