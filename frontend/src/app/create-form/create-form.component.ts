@@ -23,7 +23,7 @@ export class CreateFormComponent implements OnInit {
   form: FormGroup;
 
 
-
+  //deklaracja zmiennych globalnych
   worker: Tesseract.Worker = createWorker();
   isReadyTeserakForWork: boolean;
   imageChangedEvent: any;
@@ -58,18 +58,26 @@ export class CreateFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    /**
+     * Dodanie do programu inicjalizatora stron(czyli inaczej schematów dla plików)
+     */
     this.form = this.fb.group({
       //formArrContainer: this.fb.array([]),
       formArrPage: this.fb.array([]),
     });
 
+    /**
+     * Rodzaj zmiennych do odczytania przez OCR
+     */
     this.taxonomyVariableType = of([
       { idType: '1', valueType: 'String' },
       { idType: '2', valueType: 'Liczba' },
       { idType: '3', valueType: 'Data' },
       { idType: '4', valueType: 'PESEL' },
     ]);
-    //this.addFormContainer();
+    /**
+     * Dodanie do Strony, inicjalizatora schematu formularzy
+     */
     this.formPage.push(
       this.fb.group({
         formArrContainer: this.fb.array([]),
@@ -78,6 +86,9 @@ export class CreateFormComponent implements OnInit {
     // this.pushNewFormArrayElement();
   }
 
+  /**
+   * Wywołanie Tesseracta
+   */
   initializeTessaract(): void {
     // Called as early as possible
     (async () => {
@@ -88,6 +99,9 @@ export class CreateFormComponent implements OnInit {
     })();
   }
 
+  /**
+   * Przypisywanie dla każdej strony odpowiedniego szkicu formularza
+   */
   createArrayFormPage(numberOfImages: number, template: DataContainer[]): void {
     this.form = this.fb.group({
       formArrPage: this.fb.array([]),
@@ -105,6 +119,9 @@ export class CreateFormComponent implements OnInit {
     this.createArrayFormElement(template);
   }
 
+  /**
+   * Dodawanie do szkicu formularza pól, które są załadowywane z formularza
+   */
   createArrayFormElement(template: DataContainer[]) {
     this.formPage.controls.forEach((element) => {
       template.forEach((templateEl) => {
@@ -124,6 +141,9 @@ export class CreateFormComponent implements OnInit {
     });
   }
 
+  /**
+   * Dodanie do aplikacji nowego pola formularza
+   */
   pushNewFormArrayElement() {
     this.formPage.controls.forEach((element) => {
       (element.get('formArrContainer') as FormArray).push(
@@ -139,7 +159,9 @@ export class CreateFormComponent implements OnInit {
       );
     });
   }
-
+/**
+ * Funkcja odpowiadająca za wgranie zdjęć do systemu
+ */
   handleFileInput(event): void {
     //  console.log(event);
 
@@ -151,6 +173,10 @@ export class CreateFormComponent implements OnInit {
     }
   }
 
+  /**
+   * Funkcja odpowiadająca za przechodzenie między zdjęciami.
+   * Jeśli zostanie wywołana i można przejść do następnego zdjęcia, wywołuje ona funkcję odczytującą dane z zdjęcia według formularza
+   */
   async onClickChangeImage(amount: number) {
     if (
       this.currentImage + amount > 0 &&
@@ -162,6 +188,9 @@ export class CreateFormComponent implements OnInit {
     }
   }
 
+  /**
+   * Funkcja ta w zależności od indexu, wyświetla na stronie wybrane zdjęcie
+   */
   setImages(index: number): void {
     let reader = new FileReader();
 
@@ -173,7 +202,9 @@ export class CreateFormComponent implements OnInit {
     };
     reader = null;
   }
-
+/**
+ * Funkcja odpowiadająca za wgranie szkicu formularza do systemu
+ */
   loadCustomForm(event): void {
     if (this.currentImage != 0) {
       this.currentImage = 1;
@@ -198,7 +229,10 @@ export class CreateFormComponent implements OnInit {
 
     }
   }
-
+/**
+ * Celem tej funkcji jest asynchroniczne zeskanowanie plików w programie.
+ * Funkcja ta jest wywoływana w saveFile() dla każdego zdjęcia, z którego nie odczytano do tej pory danych
+ */
   async doOCRMultiple() {
     console.log('current image', this.currentImage, this.formPage.getRawValue());
     const rectanglesForOCR = [];
@@ -266,7 +300,11 @@ export class CreateFormComponent implements OnInit {
   }
 
 
-
+/**
+ * Funkcja wywoływana głównie w czasie tworzenia schematu formularza.
+ * Występuje po wciśnięciu przycisku Kliknij aby zeskanować
+ * Wysyła ona do tesseracta fragment zdjęcia
+ */
   scanOCR(idContainer: number, pageID: number) {
     this.isScanning = true;
     this.imageCropper.imageFile = this.croppedImage;
@@ -274,9 +312,14 @@ export class CreateFormComponent implements OnInit {
     //this.imageChangedEvent = null;
     this.doOCR(this.croppedImage, idContainer, pageID);
   }
+
   fileChangeEvent(event: any): void {
     this.imageChangedEvent = event;
   }
+  /**
+   * Funkcja wymaga do zaimplementowania przez biblioteke Image Cropper
+   * Za jej pomocą program zapisuje gdzie znajduje się wycinek wybrany przez użytkownika
+   */
   imageCropped(event: ImageCroppedEvent): void {
     //console.log(event);
     // console.log(event.base64);
@@ -300,6 +343,12 @@ export class CreateFormComponent implements OnInit {
 
     console.log('AfterScan', this.form.getRawValue());
   }
+
+/**
+ * Funkcja ta dzieje się w czasie wciśnięcia przycisku Kliknij by zeskanować
+ * Celem jej jest podanie danych odczytanych przez OCR do frontu, aby użytkownik był wstanie sprawdzić czy zaznaczył dobry fragment
+ * Drugim jej celem jest zapisanie gdzie użytkonik skanował, by po wciśnięciu przycisku zapisz formularz, dane te były zapamiętane
+ */
 
   doOCR(base64Image: string, id, pageID): void {
     //this.ocrResult = 'Scanning';
@@ -332,18 +381,30 @@ export class CreateFormComponent implements OnInit {
   // get formArr() {
   //   return this.form.get('formArrContainer') as FormArray;
   // }
+  /**
+   * Funkcja TODO
+   * odpowiada za przypisanie odpowiednich parametrów do Silnika OCR
+   */
 
   selectedValue(event: MatSelectChange, id: any) {
     console.log(event.value);
     console.log(id);
   }
 
-
+/**
+ * @deprecated funkcja testowa umożliwiające łatwe testowanie kodu
+ */
   activateDebug(): void {
     this.debugModeType = !this.debugModeType;
 
     // (this.formArr.controls[1] as FormGroup).get('cooridinates').get('cropperPosition').setValue(this.imageCropper.cropper)
   }
+
+  /**
+   * Funkcja odpowiadająca za zapis do pliku
+   * Gdy użytkownik wciśnie przycisk odpowiadający za tą funkcje nie robiąc podglądu wszystkich zdjęć,
+   * program zeskanuje pozostałe zdjęcia i da wynik
+   */
   async saveFile() {
     const formPage: any[] = this.formPage.getRawValue();
     const amount = 1;
@@ -375,6 +436,9 @@ export class CreateFormComponent implements OnInit {
     theLoop();
   }
 
+  /**
+   * Funkcja odpowiadająca za zapisanie schematu formularza
+   */
   saveCustomForm(): void {
     const formValues: any[] = this.formArr2(0).getRawValue();
 
