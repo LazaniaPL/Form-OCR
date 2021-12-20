@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import {
-  CropperPosition,
+
   ImageCroppedEvent,
   ImageCropperComponent,
 } from 'ngx-image-cropper';
@@ -10,9 +10,9 @@ import { createWorker } from 'tesseract.js';
 import { saveAs } from 'file-saver';
 //import { ngcontainer } from '../interfaces/ngcontainer.interface';
 import { cooridinates } from '../interfaces/coorifinates.interface';
-import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { DataContainer } from '../interfaces/dataContainer.interface';
-import { waitForAsync } from '@angular/core/testing';
+
 
 @Component({
   selector: 'app-create-form',
@@ -22,15 +22,7 @@ import { waitForAsync } from '@angular/core/testing';
 export class CreateFormComponent implements OnInit {
   form: FormGroup;
 
-  // ngcontainer: ngcontainer[] = [
-  //   {
-  //     "id": 1,
-  //     "nameOfVar": "",
-  //     "taxonomyVariableTypeID": '1',
-  //     "value": "",
-  //     "cooridinates": null
-  //   }
-  // ]
+
 
   worker: Tesseract.Worker = createWorker();
   isReadyTeserakForWork: boolean;
@@ -159,14 +151,14 @@ export class CreateFormComponent implements OnInit {
     }
   }
 
-  onClickChangeImage(amount: number) {
+  async onClickChangeImage(amount: number) {
     if (
       this.currentImage + amount > 0 &&
       this.currentImage + amount <= this.lastImage
     ) {
       this.currentImage = this.currentImage + amount;
       this.setImages(this.currentImage - 1);
-      this.doOCRMultiple();
+      await this.doOCRMultiple();
     }
   }
 
@@ -204,17 +196,18 @@ export class CreateFormComponent implements OnInit {
       };
       reader.readAsText(event.target.files[0]);
 
-
     }
   }
 
-  doOCRMultiple() {
+  async doOCRMultiple() {
+    console.log('current image', this.currentImage, this.formPage.getRawValue());
     const rectanglesForOCR = [];
     let checkAllReadyDone = false;
-    this.OcrWorking=true;
+    let result: {
+      data: { text }
+    };
 
     this.formArr2(this.currentImage - 1).controls.forEach((arrEl) => {
-      console.log('doTestOCR');
       const elRectangle = arrEl.get('cooridinates').value as cooridinates;
       const valueTemp = arrEl.get('value').value as String;
       if (valueTemp != '') {
@@ -229,23 +222,49 @@ export class CreateFormComponent implements OnInit {
       });
     });
     if (!checkAllReadyDone) {
-      (async () => {
-        for (let i = 0; i < rectanglesForOCR.length; i++) {
-          const {
-            data: { text },
-          } = await this.worker.recognize(this.imageChangedEvent, {
-            rectangle: rectanglesForOCR[i],
-          });
-          this.formArr2(this.currentImage - 1)
-            .controls[i].get('value')
-            .setValue(text);
-        }
+      let fieldInProgress = true;
 
-        // await this.worker.terminate();
-      })();
+      for (let i = 0; i < rectanglesForOCR.length; i++) {
+        console.log( this.currentImage, i);
+        await this.worker.recognize(this.imageChangedEvent, {
+          rectangle: rectanglesForOCR[i],
+        })
+        .then( data => {
+          result = data;
+          console.log(result, i);
+          fieldInProgress = true;
+        })
+        .finally(() => {
+          fieldInProgress = false
+        });
+
+        const theLoop: () => void = async () => {
+          console.log('w loop', this.currentImage, i, fieldInProgress);
+          if (!fieldInProgress) {
+            console.log('no wreszcie', this.currentImage, i, result);
+            this.formArr2(this.currentImage - 1)
+            .controls[i].get('value')
+            .setValue(result.data.text);
+          } else {
+            this.timeout(300);
+            theLoop();
+          }
+        };
+        theLoop();
+      }
+
     }
-    this.OcrWorking=false;
+    if (this.currentImage === this.lastImage) {
+      this.OcrWorking = false;
+    } else {
+      console.log('jeszcze nie current image', this.currentImage, this.lastImage);
+    }
   }
+
+  timeout(ms) { //pass a time in milliseconds to this function
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
 
 
   scanOCR(idContainer: number, pageID: number) {
@@ -325,37 +344,35 @@ export class CreateFormComponent implements OnInit {
 
     // (this.formArr.controls[1] as FormGroup).get('cooridinates').get('cropperPosition').setValue(this.imageCropper.cropper)
   }
-  saveFile() {
+  async saveFile() {
     const formPage: any[] = this.formPage.getRawValue();
     const amount = 1;
+    this.OcrWorking = true;
 
-
-
-
-
-    this.onClickChangeImage(1);
+    // this.onClickChangeImage(1);
+    console.log('form before', formPage);
     while (this.currentImage + amount <= this.lastImage) {
-
-        if (this.OcrWorking) {
-          //wait
-        } else {
-          this.onClickChangeImage(1);
-        };
-
-
+      console.log('on save', this.currentImage);
+      await this.onClickChangeImage(1);
     }
 
+    const theLoop: () => void = () => {
+      if (!this.OcrWorking) {
+        const blob = new Blob([JSON.stringify(this.formPage.getRawValue())], {
+          type: 'application/json',
+        });
 
-
-    const blob = new Blob([JSON.stringify(formPage)], {
-      type: 'application/json',
-    });
-
-    const current = new Date();
-
-    const timestamp = current.getTime();
-
-    saveAs(blob, `plik z wynikami ${timestamp}.json`);
+        const current = new Date();
+        const timestamp = current.getTime();
+        saveAs(blob, `plik z wynikami ${timestamp}.json`);
+      } else {
+        console.log('nie ostatni plik');
+        setTimeout(() => {
+          theLoop();
+        }, 200);
+      }
+    };
+    theLoop();
   }
 
   saveCustomForm(): void {
